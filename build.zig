@@ -81,6 +81,7 @@ fn buildFn(pkg_builder: *VerboseBuilder) !void {
                     if (pkg_builder.verboseDependencyLazy("evdev_zig", pkg_builder.getOptimize(), pkg_builder.getTarget())) |evdev_dep| {
                         const x11_artifact = pkg_builder.artifact(x11_dep, "X11");
                         const wayland_artifact = pkg_builder.artifact(wayland_dep, "wayland");
+                        const wayland_client_artifact = pkg_builder.artifact(wayland_dep, "wayland-client");
                         const evdev_artifact = pkg_builder.artifact(evdev_dep, "evdev");
 
                         for ([_]*std.Build.Step.Compile{ evdev_artifact, x11_artifact, wayland_artifact }) |artifact| {
@@ -88,6 +89,7 @@ fn buildFn(pkg_builder: *VerboseBuilder) !void {
                             pkg_builder.linkLibrary(lib, artifact);
                             pkg_builder.installLibraryHeaders(lib, artifact);
                         }
+                        pkg_builder.linkLibrary(lib, wayland_client_artifact);
 
                         while (try pkg_builder.iterate(&.{ "glfw", "src" })) |*entry| {
                             if ((!std.mem.startsWith(u8, entry.name, "wgl_") and
@@ -160,12 +162,14 @@ fn buildFn(pkg_builder: *VerboseBuilder) !void {
                 if (pkg_builder.verboseDependencyLazy("wayland_zig", pkg_builder.getOptimize(), pkg_builder.getTarget())) |wayland_dep| {
                     const x11_artifact = pkg_builder.artifact(x11_dep, "X11");
                     const wayland_artifact = pkg_builder.artifact(wayland_dep, "wayland");
+                        const wayland_client_artifact = pkg_builder.artifact(wayland_dep, "wayland-client");
 
                     for ([_]*std.Build.Step.Compile{ x11_artifact, wayland_artifact }) |artifact| {
                         pkg_builder.addIncludePathsFromLib(@TypeOf(lib.*), lib, artifact);
                         pkg_builder.linkLibrary(lib, artifact);
                         pkg_builder.installLibraryHeaders(lib, artifact);
                     }
+                    pkg_builder.linkLibrary(lib, wayland_client_artifact);
 
                     while (try pkg_builder.iterate(&.{ "glfw", "src" })) |*entry| {
                         if ((!std.mem.startsWith(u8, entry.name, "wgl_") and
